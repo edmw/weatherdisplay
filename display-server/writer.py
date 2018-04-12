@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import os
+
 from PIL import Image
 
 import struct
@@ -12,7 +14,8 @@ class Writer:
         self.path = path
 
     def write_png(self, image, name):
-        image.save("{}.png".format(name), 'PNG')
+        filepath = os.path.join(self.path, "{}.png".format(name))
+        image.save(filepath, 'PNG')
 
     def write_raw(self, image, name, zipped=False):
         rgb565 = bytes()
@@ -21,12 +24,11 @@ class Writer:
             g = (p[1] >> 2) & 0x3F
             b = (p[2] >> 3) & 0x1F
             rgb565 = rgb565 + struct.pack('H', (r << 11) + (g << 5) + b)
-        if zipped:
-            with gzip.open("{}.image.gz".format(name), 'wb') as f:
-                f.write(rgb565)
-        else:
-            with open("{}.image".format(name), 'wb') as f:
-                f.write(rgb565)
+
+        filepath = os.path.join(self.path, "{}.image{}".format(name, ".gz" if zipped else ""))
+        o = gzip.open if zipped else open
+        with o(filepath, 'wb') as f:
+            f.write(rgb565)
 
     def write(self, image, name="weather", zipped=False):
         image = image.rotate(90, expand=True)
