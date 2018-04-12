@@ -31,7 +31,5 @@ class Writer:
             f.write(rgb565)
 
     def write(self, image, name="weather", zipped=False):
-        image = image.rotate(90, expand=True)
-
         self.write_png(image, name)
-        self.write_raw(image, name, zipped=zipped)
+        self.write_raw(image.rotate(90, expand=True), name, zipped=zipped)
