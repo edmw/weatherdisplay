@@ -1,0 +1,9 @@
+*.py[cod]
+__pycache__
+
+# OSX
+._*
+
+# VIM
+*.bak
+
