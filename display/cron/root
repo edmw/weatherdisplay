@@ -1,0 +1,2 @@
+# min   hour    day     month   weekday command
+*/2    *       *       *       *       sh /mnt/onboard/.weatherdisplay/update.sh
