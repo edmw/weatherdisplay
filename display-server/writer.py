@@ -24,7 +24,9 @@ class Writer:
         rgb565 = (((rgb[:,:,0] & 0b11111000) << 8) | ((rgb[:,:,1] & 0b11111100) << 3) | (rgb[:,:,2] >> 3))
 
         filepath = os.path.join(self.path, "{}.image{}".format(name, ".gz" if zipped else ""))
-        rgb565.tofile(filepath)
+        o = gzip.open if zipped else open
+        with o(filepath, 'wb') as f:
+            f.write(rgb565)
 
     def write_raw_pure(self, image, name, zipped=False):
         rgb565 = bytes()
