@@ -46,15 +46,17 @@ def scale(xy, s=1, sx=None, sy=None):
 
 
 class Renderer:
+    debug = False
 
     WIDTH=600
     HEIGHT=800
-    PADDING=10
+    PADDING=20
     SUPERSAMPLING=4
 
     BLACK=(0,0,0)
     GRAY=(104,104,104)
     WHITE=(255,255,255)
+    RED=(204,0,0)
 
     def __init__(self):
         self.width = self.WIDTH * self.SUPERSAMPLING
@@ -65,9 +67,11 @@ class Renderer:
 
         self.draw = ImageDraw.Draw(self.image)
 
-        self.font = self.__get_font("Dosis-Bold", 240)
-        self.font_temperature = self.__get_font("Dosis-Bold", 320)
-        self.font_humidity = self.__get_font("Dosis-Bold", 200)
+        self.font = self.__get_font("Dosis-Bold", 200)
+        self.font_date = self.__get_font("Dosis-Bold", 200)
+        self.font_temperature = self.__get_font("Dosis-SemiBold", 420)
+        self.font_humidity = self.__get_font("Dosis-Medium", 280)
+        self.font_pressure = self.__get_font("Dosis-SemiBold", 280)
 
     def __get_font(self, name, size):
         return ImageFont.truetype(
@@ -76,6 +80,7 @@ class Renderer:
         )
 
     def draw_temperature_visual(self, xy, value, min_value, max_value):
+        if self.debug: self.draw.rectangle(xy, outline=self.RED)
         if value is None:
             value = min_value
         value = (max(min(value, max_value), min_value) - min_value) / (max_value - min_value)
@@ -104,76 +109,104 @@ class Renderer:
         self.draw.rectangle(mod(xy_tube_inner, y1=y2(xy_tube_inner)-tube_inner_value), fill=self.BLACK)
 
     def draw_temperature(self, xy, value):
+        if self.debug: self.draw.rectangle(xy, outline=self.RED)
         if value is None:
-            text = "----°"
+            text = "---°"
         else:
             text = "{:.1f}°".format(value)
         w, h = self.draw.textsize(text, self.font_temperature)
-        self.draw.text((x1(xy), y1(xy)), text, font=self.font_temperature, fill=self.BLACK)
+        y = self.font_temperature.getoffset("°")[1]
+        self.draw.text((x1(xy), y1(xy)-y), text, font=self.font_temperature, fill=self.BLACK)
         return y1(xy)+h
 
     def draw_humidity(self, xy, value):
+        if self.debug: self.draw.rectangle(xy, outline=self.RED)
         if value is None:
             text = "--- %"
         else:
             text = "{:.0f} %".format(value)
         w, h = self.draw.textsize(text, self.font_humidity)
-        self.draw.text((x1(xy), y1(xy)), text, font=self.font_humidity, fill=self.BLACK)
+        y = self.font_humidity.getsize("%")[1]
+        self.draw.text((x1(xy), y2(xy)-y), text, font=self.font_humidity, fill=self.BLACK)
+        return y1(xy)+h
+
+    def draw_pressure(self, xy, value):
+        if self.debug: self.draw.rectangle(xy, outline=self.RED)
+        if value is None:
+            text = "--- hPa"
+        else:
+            text = "{:.2f} hPa".format(value/100)
+        w, h = self.draw.textsize(text, self.font_pressure)
+        self.draw.text(((x2(xy)-x1(xy))/2-w/2+x1(xy), y1(xy)), text, font=self.font_pressure, fill=self.BLACK)
         return y1(xy)+h
 
     def draw_headline(self, xy, text):
+        if self.debug: self.draw.rectangle(xy, outline=self.RED)
         text = "{}".format(text)
-        w, h = self.draw.textsize(text, self.font)
-        self.draw.text(((x2(xy)-x1(xy))/2-w/2, y1(xy)), text, font=self.font, fill=self.GRAY)
+        w, h = self.draw.textsize(text, self.font_date)
+        self.draw.text(((x2(xy)-x1(xy))/2-w/2+x1(xy), y1(xy)), text, font=self.font_date, fill=self.GRAY)
         return y1(xy)+h
 
     def draw_datetime(self, xy, dt):
-        text = '{dt:%A}, {dt.day}. {dt:%B}\n{dt.hour}:{dt:%M} Uhr'.format(dt=dt)
+        if self.debug: self.draw.rectangle(xy, outline=self.RED)
+        text = '{dt.day}. {dt:%B}   {dt.hour}:{dt:%M} Uhr'.format(dt=dt)
+        text = '24. November   24:59 Uhr'
         w, h = self.draw.textsize(text, self.font, spacing=50)
-        self.draw.text(((x2(xy)-x1(xy))/2-w/2, y1(xy)), text, spacing=50, align="center", font=self.font, fill=self.GRAY)
+        y = self.font_date.getsize("%")[1]
+        self.draw.text(((x2(xy)-x1(xy))/2-w/2+x1(xy), y2(xy)-y), text, spacing=50, align="center", font=self.font, fill=self.GRAY)
         return y1(xy)+h
 
     def render(self, data):
         row = self.height / 5
         # outside
-        x1 = 1*self.padding
-        x2 = self.width-2*self.padding
-        y1 = 1*self.padding
-        y2 = 0
+        x1 = self.padding
+        x2 = self.width-self.padding
+        y1 = 0.5*self.padding
+        y2 = row
         y = self.draw_headline([(x1,y1), (x2,y2)], "Außenklima")
         # temperature
         x1 = 2*self.padding
         x2 = self.width/2-4*self.padding
-        y1 = y+4*self.padding
+        y1 = y+2*self.padding
         y2 = y1+row
         w1 = (y2-y1)/3
         self.draw_temperature_visual([(x1,y1),(x1+w1,y2)], data.outdoor_temperature, -15, 45)
         y = self.draw_temperature([(x1+w1+self.padding,y1),(x2,y2)], data.outdoor_temperature)
+        # humidity
         x1 = x1+1*self.padding
-        y1 = y+1*self.padding
         y = self.draw_humidity([(x1+w1+self.padding,y1),(x2,y2)], data.outdoor_humidity)
         # inside
         x1 = 1*self.padding
         x2 = self.width-2*self.padding
-        y1 = y2+5*self.padding
+        y1 = y2+self.padding
         y2 = y1+row
         y = self.draw_headline([(x1,y1), (x2,y2)], "Innenklima")
         # temperature
         x1 = 2*self.padding
         x2 = self.width/2-4*self.padding
-        y1 = y+4*self.padding
+        y1 = y+2*self.padding
         y2 = y1+row
         w1 = (y2-y1)/3
         self.draw_temperature_visual([(x1,y1),(x1+w1,y2)], data.indoor_temperature, -15, 45)
         y = self.draw_temperature([(x1+w1+self.padding,y1),(x2,y2)], data.indoor_temperature)
+        # humidity
         x1 = x1+1*self.padding
-        y1 = y+1*self.padding
         y = self.draw_humidity([(x1+w1+self.padding,y1),(x2,y2)], data.indoor_humidity)
+        # air pressure
+        x1 = 1*self.padding
+        x2 = self.width-2*self.padding
+        y1 = y2+self.padding
+        y2 = y1
+        y1 = self.draw_headline([(x1,y1), (x2,y2)], "Luftdruck")
+        y1 = y1+self.padding
+        y2 = y1
+        y1 = self.draw_pressure([(x1,y1), (x2,y2)], data.outdoor_pressure)
+        y2 = y1
         # datetime
         x1 = 1*self.padding
         x2 = self.width-2*self.padding
-        y1 = y2+5*self.padding
-        y2 = y1+row
+        y1 = y2+self.padding
+        y2 = self.height-self.padding
         y = self.draw_datetime([(x1,y1), (x2,y2)], datetime.now())
 
         return self.image.resize((self.WIDTH, self.HEIGHT), resample=Image.LANCZOS)

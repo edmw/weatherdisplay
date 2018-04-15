@@ -8,6 +8,7 @@ pillow = "*"
 coloredlogs = "*"
 humanfriendly = "*"
 influxdb = "*"
+numpy = "*"
 
 [dev-packages]
 

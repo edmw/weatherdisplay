@@ -8,6 +8,8 @@ import struct
 
 import gzip
 
+import numpy
+
 class Writer:
 
     def __init__(self, path):
@@ -18,6 +20,13 @@ class Writer:
         image.save(filepath, 'PNG')
 
     def write_raw(self, image, name, zipped=False):
+        rgb = numpy.array(image, dtype="uint16")
+        rgb565 = (((rgb[:,:,0] & 0b11111000) << 8) | ((rgb[:,:,1] & 0b11111100) << 3) | (rgb[:,:,2] >> 3))
+
+        filepath = os.path.join(self.path, "{}.image{}".format(name, ".gz" if zipped else ""))
+        rgb565.tofile(filepath)
+
+    def write_raw_pure(self, image, name, zipped=False):
         rgb565 = bytes()
         for p in image.getdata():
             r = (p[0] >> 3) & 0x1F
