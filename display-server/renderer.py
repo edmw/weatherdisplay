@@ -150,7 +150,6 @@ class Renderer:
     def draw_datetime(self, xy, dt):
         if self.debug: self.draw.rectangle(xy, outline=self.RED)
         text = '{dt.day}. {dt:%B}   {dt.hour}:{dt:%M} Uhr'.format(dt=dt)
-        text = '24. November   24:59 Uhr'
         w, h = self.draw.textsize(text, self.font, spacing=50)
         y = self.font_date.getsize("%")[1]
         self.draw.text(((x2(xy)-x1(xy))/2-w/2+x1(xy), y2(xy)-y), text, spacing=50, align="center", font=self.font, fill=self.GRAY)
