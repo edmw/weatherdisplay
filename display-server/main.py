@@ -2,24 +2,36 @@
 # coding: utf-8
 
 """
-Try 'python weather.py -h' for usage information.
+Create a Weather Display image.
+
+Read data, render image and save to file.
+
+Data will be read from Influx database.
+Image will be written in either PNG, RGB565 raw or RGB565 raw zipped format.
+
+Try '-h' for usage information.
 """
 
-import sys
-import os
-import locale
-import argparse
-import logging
 
+# 1st Party Modules
 from reader import Reader
 from renderer import Renderer
 from writer import Writer
 
+# 16. Generic Operating System Services
+import argparse
+import logging
+# 23. Internationalization
+import locale
+
 
 DESCRIPTION = """
+Create a Weather Display image. Read data, render image and save to file.
 """
 
 EPILOG = """
+Data will be read from Influx database.
+Image will be written in either PNG, RGB565 raw or RGB565 raw zipped format.
 """
 
 
@@ -83,8 +95,8 @@ def main(args=None):
         help='output file name (defaults to "weather")'
     )
     group_db.add_argument(
-        '-z', '--zipped', action='store_true', default=False,
-        help='write zipped output'
+        '--format', action='store', metavar='FORMAT', default='PNG',
+        help='output file format (either "PNG", "RAW565", "RAW565Z", defaults to "PNG")'
     )
 
     arguments = parser.parse_args() if args is None else parser.parse_args(args)
@@ -101,7 +113,8 @@ def main(args=None):
 
     data = Reader(arguments.db, arguments.dbhost, arguments.dbport).read()
     image = Renderer().render(data)
-    Writer(arguments.path).write(image, name=arguments.name, zipped=arguments.zipped)
+    Writer(arguments.path).write(image, name=arguments.name, file_format=arguments.format)
+
 
 if __name__ == "__main__":
     locale.setlocale(locale.LC_TIME, 'de_DE.UTF-8')
