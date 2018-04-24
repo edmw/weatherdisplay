@@ -7,7 +7,7 @@ Create a Weather Display image.
 Read data, render image and save to file.
 
 Data will be read from Influx database.
-Image will be written in either PNG, RGB565 raw or RGB565 raw zipped format.
+Image will be written in either RGB565 raw or RGB565 raw zipped format.
 
 Try '-h' for usage information.
 """
@@ -31,7 +31,7 @@ Create a Weather Display image. Read data, render image and save to file.
 
 EPILOG = """
 Data will be read from Influx database.
-Image will be written in either PNG, RGB565 raw or RGB565 raw zipped format.
+Image will be written in either RGB565 raw or RGB565 raw zipped format.
 """
 
 
@@ -41,6 +41,12 @@ class ArgumentParser(argparse.ArgumentParser):
         """ Print human friendly help. """
         import humanfriendly.terminal
         humanfriendly.terminal.usage(self.format_help())
+
+
+def fileFormat(string):
+    if not string.upper() in ['RAW565', 'RAW565Z']:
+        raise argparse.ArgumentTypeError('Value has to be either "RAW565" or "RAW565Z"')
+    return string
 
 
 def main(args=None):
@@ -87,16 +93,20 @@ def main(args=None):
         help='portnumber for influx db'
     )
 
-    group_db = parser.add_argument_group(
+    group_output = parser.add_argument_group(
         'output options', ''
     )
-    group_db.add_argument(
+    group_output.add_argument(
         '--name', action='store', metavar='NAME', default='weather',
         help='output file name (defaults to "weather")'
     )
-    group_db.add_argument(
-        '--format', action='store', metavar='FORMAT', default='PNG',
-        help='output file format (either "PNG", "RAW565", "RAW565Z", defaults to "PNG")'
+    group_output.add_argument(
+        '--format', action='store', metavar='FORMAT', default='RAW565', type=fileFormat,
+        help='output file format (either "RAW565" or "RAW565Z", defaults to "RAW565")'
+    )
+    group_output.add_argument(
+        '--png', action='store_true',
+        help='output additional png image'
     )
 
     arguments = parser.parse_args() if args is None else parser.parse_args(args)
@@ -111,9 +121,30 @@ def main(args=None):
 
     # this is the beef
 
-    data = Reader(arguments.db, arguments.dbhost, arguments.dbport).read()
+    data = Reader(
+        arguments.db,
+        arguments.dbhost,
+        arguments.dbport
+    ).read()
+
     image = Renderer().render(data)
-    Writer(arguments.path).write(image, name=arguments.name, file_format=arguments.format)
+
+    Writer(
+        arguments.path
+    ).write(
+        image,
+        file_name=arguments.name,
+        file_format=arguments.format
+    )
+
+    if arguments.png:
+        Writer(
+            arguments.path
+        ).write(
+            image,
+            file_name=arguments.name,
+            file_format="PNG"
+        )
 
 
 if __name__ == "__main__":

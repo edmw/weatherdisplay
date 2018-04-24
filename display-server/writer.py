@@ -47,11 +47,13 @@ class Writer:
             rgb565 = rgb565 + struct.pack('H', (r << 11) + (g << 5) + b)
         self.__write_raw(rgb565, name, zipped)
 
-    def write(self, image, name="weather", file_format='PNG'):
+    def write(self, image, file_name="weather", file_format='PNG'):
         file_format = file_format.upper()
         if file_format == 'PNG':
-            self.write_png(image, name)
+            self.write_png(image, file_name)
         elif file_format == 'RAW565':
-            self.write_raw(image.rotate(90, expand=True), name, zipped=False)
+            self.write_raw(image.rotate(90, expand=True), file_name, zipped=False)
         elif file_format == 'RAW565Z':
-            self.write_raw(image.rotate(90, expand=True), name, zipped=True)
+            self.write_raw(image.rotate(90, expand=True), file_name, zipped=True)
+        else:
+            raise ValueError("Invalid file format '{}'".format(file_format))
