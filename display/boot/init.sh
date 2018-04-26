@@ -3,7 +3,7 @@ WD=/mnt/onboard/.weatherdisplay
 
 # show boot image and wait five seconds
 zcat $WD/screens/init.image.gz | /usr/local/Kobo/pickel showpic
-sleep 5
+sleep 2
 
 # show boot image and select what to boot depending on the position of a touch
 zcat $WD/screens/init-wait.image.gz | /usr/local/Kobo/pickel showpic

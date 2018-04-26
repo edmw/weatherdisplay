@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 WD=/mnt/onboard/.weatherdisplay
 
 if [ -e /tmp/bootselect ]; then

@@ -11,10 +11,15 @@ if [ -e /tmp/bootselect ]; then
 
         $WD/tools/led.sh OFF
 
-        $WD/busybox_custom crond -l 15 -c $WD/cron/
-
         zcat $WD/screens/download.image.gz | /usr/local/Kobo/pickel showpic
 
-        sh $WD/update.sh >& $WD/update.out
+        if [ "$SELECTED" == "wd" ]; then
+            # start update cron
+            $WD/busybox_custom crond -l 15 -c $WD/cron/
+
+            # start update script
+            sh $WD/update.sh >& $WD/update.out
+        fi
+        # do not start update cron and update script if in dev mode
     fi
 fi

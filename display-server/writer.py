@@ -48,12 +48,22 @@ class Writer:
         self.__write_raw(rgb565, name, zipped)
 
     def write(self, image, file_name="weather", file_format='PNG'):
-        file_format = file_format.upper()
-        if file_format == 'PNG':
-            self.write_png(image, file_name)
-        elif file_format == 'RAW565':
-            self.write_raw(image.rotate(90, expand=True), file_name, zipped=False)
-        elif file_format == 'RAW565Z':
-            self.write_raw(image.rotate(90, expand=True), file_name, zipped=True)
-        else:
-            raise ValueError("Invalid file format '{}'".format(file_format))
+        if image:
+            file_format = file_format.upper()
+            if file_format == 'PNG':
+                self.write_png(image, file_name)
+            elif file_format == 'RAW565':
+                self.write_raw(image.rotate(90, expand=True), file_name, zipped=False)
+            elif file_format == 'RAW565Z':
+                self.write_raw(image.rotate(90, expand=True), file_name, zipped=True)
+            else:
+                raise ValueError("Invalid file format '{}'".format(file_format))
+        return self
+
+    def write_timestamp(self, timestamp, file_name="weather"):
+        if timestamp:
+            filename = "{}.ts".format(file_name)
+            filepath = os.path.join(self.path, filename)
+            with open(filepath, 'w') as f:
+                f.write("{:.0f}".format(timestamp))
+        return self

@@ -21,6 +21,7 @@ from writer import Writer
 # 16. Generic Operating System Services
 import argparse
 import logging
+import time
 # 23. Internationalization
 import locale
 
@@ -108,6 +109,10 @@ def main(args=None):
         '--png', action='store_true',
         help='output additional png image'
     )
+    group_output.add_argument(
+        '--timestamp', action='store_true',
+        help='output timestamp file'
+    )
 
     arguments = parser.parse_args() if args is None else parser.parse_args(args)
 
@@ -135,16 +140,14 @@ def main(args=None):
         image,
         file_name=arguments.name,
         file_format=arguments.format
+    ).write(
+        image if arguments.png else None,
+        file_name=arguments.name,
+        file_format="PNG"
+    ).write_timestamp(
+        time.time() if arguments.timestamp else None,
+        file_name=arguments.name,
     )
-
-    if arguments.png:
-        Writer(
-            arguments.path
-        ).write(
-            image,
-            file_name=arguments.name,
-            file_format="PNG"
-        )
 
 
 if __name__ == "__main__":

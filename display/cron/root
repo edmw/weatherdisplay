@@ -1,2 +1,2 @@
 # min   hour    day     month   weekday command
-5,20,35,50    *       *       *       *       sh /mnt/onboard/.weatherdisplay/update.sh
+2,7,12,17,22,27,32,37,42,47,52,57    *       *       *       *       sh /mnt/onboard/.weatherdisplay/update.sh
